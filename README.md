@@ -1,2 +1,0 @@
-# lotto-simulation
- 
