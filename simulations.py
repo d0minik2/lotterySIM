@@ -11,91 +11,127 @@ class Player:
 
         self.set_guess(guess)
     
+    
     def get_guess(self) -> list[int]:
         return self.guess
+    
     
     def get_balance(self) -> float:
         self.balance = self.money_earned - self.money_spent
         return self.balance
     
-    def set_guess(self, player_guess: list[int], lottery = None):
+    
+    def set_guess(self, player_guess: list[list[int]], lottery = None):
         if lottery is not None:
             if lottery.is_guess_correct(player_guess):
                 self.guess = player_guess
-        self.guess = player_guess #TODO temporary
+            else:
+                raise("Player's guess is not correct")
+        else: 
+            self.guess = player_guess
+       
         
     def spend_money(self, money: float):
         self.money_spent += money
         
+        
     def grant_money(self, money: float):
         self.money_earned += money
     
+    
     def generate_guess(self, lottery):
-        self.guess = []
-        
-        for i in range(lottery.no_guesses):
-            n = random.choice(lottery.numbers) 
-            
-            while n in self.guess:
-                n = random.choice(self.guess) 
-            self.guess.append(n)
-
+        self.guess = lottery.generate_random_guess()
+        return self.get_guess
         
 
 class Lottery:
     def __init__(self,
         rewards: dict[int, float],
         guess_price: float,
-        no_guesses: int,
-        numbers: list[int]
+        guess_table: list[list[list[int]]]
         ):
         self.rewards = rewards
         self.guess_price = guess_price
-        self.no_guesses = no_guesses
-        self.numbers = numbers
+        self.guess_table = guess_table
         
-        self.correct_numbers = []
+        self.correct_guess = None
 
-    def generate_winning_numbers(self) -> list[int]:
-        self.correct_numbers = []
+
+    def generate_random_guess(self) -> list[list[int]]:
+        guess = []
         
-        for i in range(self.no_guesses):
-            n = random.choice(self.numbers) 
-            while n in self.correct_numbers:
-                n = random.choice(self.numbers) 
-            self.correct_numbers.append(n)
+        for section in self.guess_table:
+            correct_section = []
+            
+            for numbers in section:
+                n = random.choice(numbers)
+                
+                while n in correct_section: # numbers in each section must be different
+                    n = random.choice(numbers) 
+                correct_section.append(n)
+                
+            guess.append(correct_section)
+
+        return guess
+    
+    
+    def generate_winning_numbers(self) -> list[list[int]]:
+        self.correct_guess = self.generate_random_guess()
+        return self.correct_guess
+    
+    
+    def count_reward(self, player: Player) -> (bool, float):
+        guess = player.get_guess()
+        correct = []
+        max_correct = []
+        
+        for i, section in enumerate(guess): # count how many correct answers in each section
+            section_correct = len(set(section).intersection(set(self.correct_guess[i])))
+            correct.append(section_correct)
+            
+            if section_correct == len(section):
+                max_correct.append(True)
+            else:
+                max_correct.append(False)
+        
+        price = self.rewards.copy()
+        for i in correct:
+            price = price[i]
+        
+        return (all(max_correct), price)
+        
     
     def play_round(self, player: Player) -> bool:
         # returns true when won the top price
         
         self.generate_winning_numbers()
         
-        # count how many numbers are the same
-        correct = len(set(player.get_guess()).intersection(set(self.correct_numbers)))
-        won_money = self.rewards[correct]
+        correct, won_money = self.count_reward(player)
+        
         player.spend_money(self.guess_price)
         player.grant_money(won_money) 
         
-        if correct == self.no_guesses:
-            return True
-        return False
+        return correct
+    
     
     def is_guess_correct(self, guess: list[int]) -> bool:
-        if not isinstance(guess, (list, tuple)):
-            raise(f"Guess should be a list of numbers")
+        if not isinstance(guess, (list, tuple)): # wrong formant
+            return False
         
-        for i, n in enumerate(guess):
-            if n not in self.numbers:
-                raise(f"Guess not correct, {n} is not a correct guess")
-                # return False
-            if n in guess[:i]:
-                raise(f"Guess not correct, numbers can't repeat")
-                # return False
-                
-        if len(guess) != self.no_guesses:
-            raise(f"Guess not correct, there should be {self.no_guesses} numbers, not {len(guess)}")
-            # return False
+        for i, s in enumerate(guess):
+            if not isinstance(s, (list, tuple)): # wrong formant
+                return False
             
+            if len(s) != len(self.guess_table[i]): # wrong format
+                return False
+            
+            for j, n in enumerate(s):
+                if n not in self.guess_table[i][j]: # number must be defined in guess table
+                    return False
+                
+                if n in s[:j]: # numbers in section cant repeat
+                    return False
+                
         return True
     
 
@@ -103,11 +139,15 @@ class Lottery:
 class Simulation:
     def __init__(self,
         lottery: Lottery,
-        player: Player,
-        rounds_per_week: int,
+        player: Player = None,
+        rounds_per_week: int = 1,
     ):
         self.lottery = lottery
-        self.player = player
+        
+        if player is not None:
+            self.player = player
+        else:
+            self.player = Player() # create default player
         
         self.rounds_per_week = rounds_per_week
         
@@ -115,19 +155,39 @@ class Simulation:
         self.weeks_passed = 0
         self.top_price_wins = 0
     
+    
     def get_balance(self) -> float:
         return self.player.get_balance()
     
+    
     def simulate_week(self):
-        for i in range(self.rounds_per_week):
+        for _ in range(self.rounds_per_week):
             if self.lottery.play_round(self.player):
                 self.top_price_wins += 1
         self.weeks_passed += 1
+     
       
     def simulate_year(self):
-        for i in range(52):
+        for _ in range(52):
             self.simulate_week()
         self.years_passed += 1
+    
+    
+    def simulate_years(self, n, log=False):
+        for _ in range(n):
+            self.simulate_year()
+            
+            if log:
+                print(self.get_results())
+    
+    
+    def simulate_years_until_won(self, n_of_wins=1, log=False):
+        while self.top_price_wins < n_of_wins:
+            self.simulate_year()
+            
+            if log:
+                print(self.get_results())
+        
     
     def get_results(self) -> str: 
         result = (
@@ -138,6 +198,7 @@ class Simulation:
             f"won the top price {self.top_price_wins} times\n\n"
         )
         return result
+    
     
     def __str__(self):
         return self.get_results()
