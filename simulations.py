@@ -26,7 +26,13 @@ class Player:
             if lottery.is_guess_correct(player_guess):
                 self.guess = player_guess
             else:
-                raise("Player's guess is not correct")
+                player_guess = lottery.format_guess(player_guess)
+                
+                if lottery.is_guess_correct(player_guess):
+                    self.guess = player_guess
+                else:  
+                    print(player_guess)
+                    raise("Player's guess is not correct")
         else: 
             self.guess = player_guess
        
@@ -44,6 +50,7 @@ class Player:
         return self.get_guess
         
 
+
 class Lottery:
     def __init__(self,
         rewards: dict[int, float],
@@ -54,8 +61,26 @@ class Lottery:
         self.guess_price = guess_price
         self.guess_table = guess_table
         
+        if isinstance(guess_table[0], (list, tuple)):
+            if isinstance(guess_table[0][0], (int, str)):
+                self.guess_table = [self.guess_table] # create section if not present
+        else:
+            raise("Guess table is not correct")
+        
         self.correct_guess = None
 
+    def format_guess(self, guess) -> list[list[int]]:
+        # TODO seperating numbers to sections 
+        if isinstance(guess, (list, tuple)):
+            if isinstance(guess[0], (int, str)):  
+                new_guess = []
+                
+                for sect in self.guess_table:
+                    s = [guess.pop(0) for _ in sect]
+                    new_guess.append(s)
+                        
+                guess = new_guess
+        return guess
 
     def generate_random_guess(self) -> list[list[int]]:
         guess = []
