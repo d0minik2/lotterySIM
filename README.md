@@ -66,3 +66,47 @@ won the top price 0 times
 
 
 <h3 align="center">Usage with custom lotteries</h3>
+
+- Import module
+
+```python
+import lotterySIM
+
+
+```
+
+- Define format of guess (Each sublist is a section in which numbers can't repeat themselves. Each guess field must be a list of possible numbers to choose from)
+```python
+guess_table = [
+    [
+        [i for i in range(1, 50 + 1)],
+        [i for i in range(1, 50 + 1)],
+        [i for i in range(1, 50 + 1)],
+        [i for i in range(1, 50 + 1)],
+        [i for i in range(1, 50 + 1)],
+    ],
+    [
+        [i for i in range(1, 12 + 1)],
+        [i for i in range(1, 12 + 1)]
+    ] 
+]
+```
+# TODO
+- Initialize simulation
+```python
+lottery = lotterySIM.Lottery(
+    rewards=reward_table,
+    guess_price=guess_price,
+    guess_table=guess_table
+    )
+    
+player = Player()
+
+simulation = Simulation(
+    lottery=lottery,
+    player=player,
+    rounds_per_week=3
+    )
+```
+
+# TODO
