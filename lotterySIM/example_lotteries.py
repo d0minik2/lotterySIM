@@ -1,4 +1,4 @@
-from simulations import Lottery
+from .simulations import Lottery
 
 
 class Lotto(Lottery):

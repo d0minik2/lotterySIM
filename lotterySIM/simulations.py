@@ -212,8 +212,7 @@ class Simulation:
             
             if log:
                 print(self.get_results())
-        
-    
+            
     def get_results(self) -> str: 
         result = (
             f"simulated {self.years_passed} years\n"
