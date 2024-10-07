@@ -14,7 +14,7 @@ TODO
 #### or
 ```console
 # install by pip directly from github
-TODO
+pip install git+https://github.com/d0minik2/lotterySIM.git
 ```
 
 <br>
