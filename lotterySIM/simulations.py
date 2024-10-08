@@ -4,10 +4,15 @@ import random
 
 
 class Player:
-    def __init__(self, guess=[]):
-        self.money_spent = 0
-        self.money_earned = 0
-        self.balance = 0
+    def __init__(self,
+        guess=[],
+        money_spent = 0,
+        money_earned = 0,
+        balance = 0
+        ):
+        self.money_spent = money_spent
+        self.money_earned = money_earned
+        self.balance = balance
 
         self.set_guess(guess)
     
@@ -164,22 +169,23 @@ class Lottery:
 class Simulation:
     def __init__(self,
         lottery: Lottery,
-        player: Player = None,
+        player: Player,
         rounds_per_week: int = 1,
+        years_passed = 0,
+        weeks_passed = 0,
+        games_played = 0,
+        top_price_wins = 0
     ):
         self.lottery = lottery
         
-        if player is not None:
-            self.player = player
-        else:
-            self.player = Player() # create default player
-        
+        self.player = player
+
         self.rounds_per_week = rounds_per_week
         
-        self.years_passed = 0
-        self.weeks_passed = 0
-        self.games_played = 0
-        self.top_price_wins = 0
+        self.years_passed = years_passed
+        self.weeks_passed = weeks_passed
+        self.games_played = games_played
+        self.top_price_wins = top_price_wins
     
     
     def get_balance(self) -> float:
