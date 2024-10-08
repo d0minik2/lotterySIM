@@ -178,6 +178,7 @@ class Simulation:
         
         self.years_passed = 0
         self.weeks_passed = 0
+        self.games_played = 0
         self.top_price_wins = 0
     
     
@@ -189,6 +190,7 @@ class Simulation:
         for _ in range(self.rounds_per_week):
             if self.lottery.play_round(self.player):
                 self.top_price_wins += 1
+            self.games_played += 1
         self.weeks_passed += 1
      
       
@@ -203,7 +205,7 @@ class Simulation:
             self.simulate_year()
             
             if log:
-                print(self.get_results())
+                self.print_results()
     
     
     def simulate_years_until_won(self, n_of_wins=1, log=False):
@@ -211,18 +213,28 @@ class Simulation:
             self.simulate_year()
             
             if log:
-                print(self.get_results())
+                self.print_results()
             
-    def get_results(self) -> str: 
-        result = (
+            
+    def get_results(self) -> dict: 
+        result = {
+            "years_passed": self.years_passed,
+            "weeks_passed": self.weeks_passed,
+            "games_played": self.games_played,
+            "money_spent": self.player.money_spent,
+            "money_earned": self.player.money_earned,
+            "total_balane": self.get_balance(),
+            "top_price_wins": self.top_price_wins
+        }
+        
+        return result
+    
+    
+    def print_results(self):
+        print(
             f"simulated {self.years_passed} years\n"
             f"money spent: {self.player.money_spent}\n"
             f"money won: {self.player.money_earned}\n"
             f"total balance: {self.get_balance()}\n"
             f"won the top price {self.top_price_wins} times\n\n"
         )
-        return result
-    
-    
-    def __str__(self):
-        return self.get_results()
