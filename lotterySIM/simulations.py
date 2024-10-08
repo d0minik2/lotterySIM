@@ -26,7 +26,7 @@ class Player:
         return self.balance
     
     
-    def set_guess(self, player_guess: list[list[int]], lottery = None):
+    def set_guess(self, player_guess: list[list[int]], lottery = None) -> bool:
         if lottery is not None:
             if lottery.is_guess_correct(player_guess):
                 self.guess = player_guess
@@ -36,11 +36,10 @@ class Player:
                 if lottery.is_guess_correct(player_guess):
                     self.guess = player_guess
                 else:  
-                    print(player_guess)
-                    raise("Player's guess is not correct")
+                    return False
         else: 
             self.guess = player_guess
-       
+        return True
         
     def spend_money(self, money: float):
         self.money_spent += money
