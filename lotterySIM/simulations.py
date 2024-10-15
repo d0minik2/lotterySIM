@@ -228,7 +228,7 @@ class Simulation:
             "games_played": self.games_played,
             "money_spent": self.player.money_spent,
             "money_earned": self.player.money_earned,
-            "total_balane": self.get_balance(),
+            "total_balance": self.get_balance(),
             "top_price_wins": self.top_price_wins
         }
         
