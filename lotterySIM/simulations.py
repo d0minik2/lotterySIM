@@ -65,6 +65,8 @@ class Lottery:
         self.guess_price = guess_price
         self.guess_table = guess_table
         
+        self.str_reward_keys = [type(i) for i in self.rewards.keys()][0] is str
+        
         if isinstance(guess_table[0], (list, tuple)):
             if isinstance(guess_table[0][0], (int, str)):
                 self.guess_table = [self.guess_table] # create section if not present
@@ -125,7 +127,10 @@ class Lottery:
         
         price = self.rewards.copy()
         for i in correct:
-            price = price[i]
+            if self.str_reward_keys:
+                price = price[str(i)]
+            else:
+                price = price[i]
         
         return (all(max_correct), price)
         
